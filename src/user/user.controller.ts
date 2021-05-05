@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User as UserModel } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 @Controller('user')
 export class UserController {
@@ -28,13 +29,31 @@ export class UserController {
 
   @Post('register')
   async createUser(@Body() requestBody: UserModel): Promise<UserModel> {
-    return this.userService.createUser(requestBody);
+    const alreadyUser = await this.userService.User({
+      email: requestBody.email,
+    });
+    if (!alreadyUser) {
+      const payload = requestBody;
+      const salt = await bcrypt.genSalt(10);
+      payload.password = await bcrypt.hash(payload.password, salt);
+      return this.userService.createUser(payload);
+    } else {
+      throw new HttpException(
+        'Already has user in system',
+        HttpStatus.FORBIDDEN,
+      );
+    }
   }
 
   @Put('update')
   async updateUser(@Body() requestBody: UserModel): Promise<UserModel> {
     const user = await this.userService.User({ id: requestBody.id });
     if (user) {
+      const payload = requestBody;
+      if (payload.password) {
+        const salt = await bcrypt.genSalt(10);
+        payload.password = await bcrypt.hash(payload.password, salt);
+      }
       return this.userService.updateUser({
         where: { id: requestBody.id },
         data: requestBody,
