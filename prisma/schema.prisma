@@ -11,8 +11,40 @@ generator client {
 }
 
 model User {
-  id    Int     @default(autoincrement()) @id
-  email String  @unique
-  name  String?
-  password String
+  id         Int         @id @default(autoincrement())
+  email      String      @unique
+  name       String?
+  password   String
+  last_login DateTime?
+  telno      String      @default("")
+  Queue      Queue[]
+  QueueUser  QueueUser[]
+}
+
+model Queue {
+  id         Int         @id @default(autoincrement())
+  owner      User        @relation(fields: [owner_id], references: [id])
+  owner_id   Int
+  start_time DateTime
+  end_time   DateTime
+  title      String?
+  content    String?
+  active     Boolean
+  QueueUser  QueueUser[]
+}
+
+model QueueUser {
+  id        Int             @id @default(autoincrement())
+  user_id   Int
+  user      User            @relation(fields: [user_id], references: [id])
+  queue_id  Int
+  queue     Queue           @relation(fields: [queue_id], references: [id])
+  join_at   DateTime
+  cancel_at DateTime
+  status    QueueUserStatus @default(ACTIVE)
+}
+
+enum QueueUserStatus {
+  CANCEL
+  ACTIVE
 }
