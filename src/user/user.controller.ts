@@ -7,26 +7,31 @@ import {
   Param,
   Post,
   Put,
+  Request,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User as UserModel } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { Public } from 'src/decorators/public.decorator';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
   @Get(':id')
   async findUserById(
     @Param('id') id: string,
   ): Promise<UserModel | HttpException> {
     const user = await this.userService.User({ id: Number(id) });
     if (user) {
+      delete user.password;
       return user;
     } else {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
   }
 
+  @Public()
   @Post('register')
   async createUser(@Body() requestBody: UserModel): Promise<UserModel> {
     const alreadyUser = await this.userService.User({
@@ -61,5 +66,10 @@ export class UserController {
     } else {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
+  }
+
+  @Get('me')
+  async me(@Request() req) {
+    return req.user;
   }
 }
