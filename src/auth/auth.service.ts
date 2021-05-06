@@ -24,6 +24,12 @@ export class AuthService {
 
   async login(user: any) {
     const payload = { email: user.email, id: user.id };
+    await this.userService.updateUser({
+      where: { id: user.id },
+      data: {
+        last_login: new Date(),
+      },
+    });
     return {
       access_token: this.jwtService.sign(payload),
     };

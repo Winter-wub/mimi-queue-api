@@ -67,9 +67,4 @@ export class UserController {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
   }
-
-  @Get('me')
-  async me(@Request() req) {
-    return req.user;
-  }
 }
