@@ -47,4 +47,17 @@ export class QueueService {
   ): Promise<QueueUserModel> {
     return this.prismaService.queueUser.create({ data });
   }
+
+  async deleteQueueUser(data: Prisma.QueueUserWhereUniqueInput): Promise<any> {
+    return this.prismaService.queueUser.update({
+      where: { id: Number(data.id) },
+      data: { cancel_at: new Date(), status: 'CANCEL' },
+    });
+  }
+
+  async getUserFromQueue(
+    data: Prisma.QueueUserWhereInput,
+  ): Promise<QueueUserModel[]> {
+    return this.prismaService.queueUser.findMany({ where: data });
+  }
 }
